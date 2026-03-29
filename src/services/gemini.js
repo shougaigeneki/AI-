@@ -1,62 +1,42 @@
 // src/services/gemini.js
 
 export async function callGeminiResearch(apiKey, theme, onProgress) {
-    // 【重要】404エラーを防ぐため、安定したURLの書き方にしています
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' + apiKey;
+    // どんな地域・アカウントでも認識される「標準版 v1」のURLを使います
+    const url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' + apiKey;
 
-    const prompt = `あなたは「物を買わない主義」の買い物図鑑の編集長です。
-テーマ「${theme}」に合致する、Amazon.co.jpでの評価が極めて高く、かつ楽天市場やYahoo!ショッピングでも扱われている「一生モノ」のクオリティを持つ商品を 5〜10件 選定してください。
+    const prompt = `あなたは買い物リサーチの専門家です。テーマ「${theme}」に合致する、Amazon・楽天・Yahooで高評価かつ「一生モノ」と言える高品質な商品を 5件 リサーチしてください。
 
-【出力ルール】
-1. Amazon、楽天市場、Yahoo!ショッピングでそれぞれ検索できるURLを作成してください。
-2. 判定理由は詳しく書いてください。
-3. JSON形式で出力してください。`;
+以下の情報を、必ず【純粋なJSON形式のみ】で出力してください。Markdownの装飾（\`\`\`jsonなど）は不要です。
 
-    const payload = {
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-            responseMimeType: "application/json",
-            responseSchema: {
-                type: "OBJECT",
-                properties: {
-                    products: {
-                        type: "ARRAY",
-                        description: "リサーチした商品のリスト",
-                        items: {
-                            type: "OBJECT",
-                            properties: {
-                                name: { type: "STRING" },
-                                rating: { type: "STRING" },
-                                judgment: { type: "STRING" },
-                                reason: { type: "STRING" },
-                                pros: { type: "STRING" },
-                                fatal_flaws: { type: "STRING" },
-                                long_term_concerns: { type: "STRING" },
-                                fake_review_risk: { type: "STRING" },
-                                amazon_url: { type: "STRING" },
-                                rakuten_url: { type: "STRING" },
-                                yahoo_url: { type: "STRING" },
-                                is_multi_platform: { type: "BOOLEAN" }
-                            },
-                            required: [
-                                "name", "rating", "judgment", "reason", "pros",
-                                "fatal_flaws", "long_term_concerns", "fake_review_risk", 
-                                "amazon_url", "rakuten_url", "yahoo_url", "is_multi_platform"
-                            ]
-                        }
-                    }
-                }
-            }
-        }
-    };
+JSONの構造：
+{
+  "products": [
+    {
+      "name": "商品名",
+      "rating": "星の数",
+      "judgment": "採用 または 不採用",
+      "reason": "判定理由",
+      "pros": "メリット",
+      "fatal_flaws": "欠点",
+      "long_term_concerns": "長期使用の懸念",
+      "fake_review_risk": "サクラリスク",
+      "amazon_url": "Amazonの検索URL",
+      "rakuten_url": "楽天の検索URL",
+      "yahoo_url": "Yahooの検索URL",
+      "is_multi_platform": true
+    }
+  ]
+}`;
 
-    onProgress('3大モールを横断リサーチ中...');
+    onProgress('3大モールを横断リサーチ中（安定モード）...');
 
     try {
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }]
+            })
         });
 
         if (!response.ok) {
@@ -65,7 +45,11 @@ export async function callGeminiResearch(apiKey, theme, onProgress) {
         }
 
         const data = await response.json();
-        const textResponse = data.candidates[0].content.parts[0].text;
+        let textResponse = data.candidates[0].content.parts[0].text;
+        
+        // AIがMarkdown（```json ... ```）で返してきた場合のゴミ取り
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        
         return JSON.parse(textResponse).products;
 
     } catch (e) {
