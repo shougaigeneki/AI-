@@ -1,7 +1,7 @@
 // src/services/gemini.js
 
 export async function callGeminiResearch(apiKey, theme, onProgress) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
     const prompt = `あなたは「物を買わない主義」の買い物図鑑の編集長です。
 テーマ「${theme}」に合致する、Amazon.co.jpでの評価が高く、かつ楽天市場やYahoo!ショッピングでも販売されている「一生モノ」のクオリティを持つ商品を 5〜10件 リサーチしてください。
