@@ -68,15 +68,15 @@ function App() {
                 type="text"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                placeholder="例: 長く使える革財布、最高のコーヒーメーカー..."
+                placeholder="何をリサーチしますか？（例: 一生モノの革財布）"
                 className="flex-grow bg-white/5 border-none rounded-xl px-6 py-4 text-lg focus:ring-2 focus:ring-purple-500 outline-none transition-all placeholder:text-gray-600"
               />
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-blue-500 active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 shadow-xl"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-4 rounded-xl font-bold text-lg hover:from-purple-500 hover:to-blue-500 active:scale-95 transition-all shadow-xl"
               >
-                {loading ? 'リサーチ中...' : 'リサーチ開始'}
+                {loading ? '分析中...' : 'リサーチ開始'}
               </button>
             </form>
           </div>
@@ -86,7 +86,7 @@ function App() {
               onClick={() => setShowSettings(!showSettings)}
               className="text-gray-500 hover:text-purple-400 transition-colors"
             >
-              設定を開く
+              APIキーの設定を開く
             </button>
             <div className={`transition-all duration-500 ${loading ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
               <span className="flex items-center gap-2 text-purple-400">
@@ -111,6 +111,9 @@ function App() {
               </button>
               <h2 className="text-2xl font-bold mb-6 text-white tracking-tight">APIキー設定</h2>
               <form onSubmit={saveApiKey}>
+                <p className="text-xs text-gray-400 mb-4">
+                  ※新しく作成したプロジェクトのAPIキーを使用してください。
+                </p>
                 <input
                   type="password"
                   value={apiKey}
